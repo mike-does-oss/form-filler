@@ -8,3 +8,4 @@ eval/results/
 eval/fixtures/*/generated/
 .pytest_cache/
 data-ui/
+*.tsbuildinfo
