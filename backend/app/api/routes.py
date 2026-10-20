@@ -42,6 +42,10 @@ def _form_out(form_id: int) -> dict:
         "page_count": f["page_count"],
         "created_at": f["created_at"],
         "fields": [x.model_dump() for x in get_fields(form_id)],
+        "template_matched": bool(
+            f["template_id"]
+            and db.q1("SELECT 1 FROM forms WHERE template_id = ? AND id < ? LIMIT 1", (f["template_id"], form_id))
+        ),
     }
 
 
@@ -133,10 +137,7 @@ async def upload_form(file: UploadFile = File(...)) -> dict:
             form_id = await asyncio.to_thread(create_form, tmp, name)
         except ValueError as e:
             raise HTTPException(400, str(e)) from e
-    out = _form_out(form_id)
-    others = db.q1("SELECT COUNT(*) AS n FROM forms WHERE template_id = ? AND id != ?", (out["template_id"], form_id))
-    out["template_matched"] = bool(others and others["n"])
-    return out
+    return _form_out(form_id)
 
 
 @router.get("/forms")

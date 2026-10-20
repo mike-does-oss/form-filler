@@ -9,7 +9,7 @@ EXTRACTION_SYSTEM = """You extract values for form fields from source documents.
 
 1. Use ONLY the provided source text. If the information is not there, return "value": null. Never guess, infer from typical values, or fill placeholders.
 2. Every non-null value needs evidence: the chunk_id and a quote COPIED EXACTLY, character for character, from that chunk. Keep quotes short (the line or phrase that contains the value).
-3. If sources disagree (different values for the same field), list every distinct value in "candidates", each with its own chunk_id and exact quote. Set "value" to the best-supported one only if one is clearly more authoritative or more recent, otherwise null.
+3. If different documents give different values for the same field (e.g. two different addresses), you MUST list every distinct value in "candidates", each with its own chunk_id and exact quote, even if you are unsure which is right. Never return an empty result just because sources disagree. Set "value" to one of them only if it is clearly more authoritative or more recent, otherwise null.
 4. If a value must be calculated (e.g. a total of several amounts, an age from a date of birth), set "derived": true, give the operation in "derivation.op" and every input value with its own chunk_id and exact quote in "derivation.inputs". Do NOT compute the result yourself; set "value" to null. The system does the arithmetic.
 5. Otherwise "derived": false and "derivation": null.
 6. Return values as they appear in the source; the system normalises formats. For checkbox fields return true/false only when the source states it.

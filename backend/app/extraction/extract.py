@@ -248,7 +248,5 @@ def run_lookup(
                 progress(done / len(batches), f"extracted batch {done}/{len(batches)}")
     for f in fields:
         if f.type == "signature":
-            results[f.key] = FieldResult(
-                key=f.key, status="not_found", confidence="low", validator_errors=["requires manual signing"]
-            )
+            results[f.key] = FieldResult(key=f.key, status="not_found", confidence="low")
     return results

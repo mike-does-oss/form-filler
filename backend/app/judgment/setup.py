@@ -112,8 +112,12 @@ def propose_rule(field: FieldDef) -> dict[str, Any]:
         conds = [c for c in code["conditions"] if slugify(str(c.get("fact", "")), 40) in seen]
         for c in conds:
             c["fact"] = slugify(str(c["fact"]), 40)
-        if conds:
-            params = {"suggested": {"rule_code": "conditions", "params": {**code, "conditions": conds}}}
+        yes, no = code.get("yes"), code.get("no")
+        if opts:
+            yes = next((o for o in opts if str(yes).strip().lower() == o.lower()), None) or next((o for o in opts if o.lower() in ("yes", "true")), None)
+            no = next((o for o in opts if str(no).strip().lower() == o.lower()), None) or next((o for o in opts if o.lower() in ("no", "false")), None)
+        if conds and yes and no and yes != no:
+            params = {"suggested": {"rule_code": "conditions", "params": {**code, "conditions": conds, "yes": yes, "no": no}}}
     return {
         "facts": [f.model_dump() for f in facts],
         "rubric": out.get("rubric") or "",

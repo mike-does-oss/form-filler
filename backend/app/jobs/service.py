@@ -84,8 +84,8 @@ def value_out(fv: dict, f: FieldDef, facts: list[dict] | None = None) -> dict:
         "order_index": f.order_index,
         "value": _dec(fv.get("value")) if fv else None,
         "final_value": _dec(fv.get("final_value")) if fv else None,
-        "status": fv.get("status") if fv else None,
-        "confidence": fv.get("confidence") if fv else None,
+        "status": fv.get("status") if fv else "not_found",
+        "confidence": fv.get("confidence") if fv else "low",
         "evidence": db.loads(fv.get("evidence_json"), []) if fv else [],
         "candidates": db.loads(fv.get("candidates_json"), []) if fv else [],
         "validator_errors": db.loads(fv.get("validator_errors_json"), []) if fv else [],
@@ -195,9 +195,13 @@ def apply_review(
     if not f_row:
         raise KeyError(field_id)
     f = row_to_field(f_row)
+    if not db.q1("SELECT id FROM jobs WHERE id = ?", (job_id,)):
+        raise KeyError(f"job {job_id} not found")
     fv = db.q1("SELECT * FROM field_values WHERE job_id = ? AND field_id = ?", (job_id, field_id))
     if not fv:
-        raise KeyError(f"no value for field {field_id} in job {job_id}")
+        # field added to the form after this job ran: start from an empty, unreviewed value
+        db.insert("field_values", result_row(job_id, f, FieldResult(key=f.key, status="not_found", confidence="low")))
+        fv = db.q1("SELECT * FROM field_values WHERE job_id = ? AND field_id = ?", (job_id, field_id))
     model_value = _dec(fv["value"])
     old_final = _dec(fv["final_value"]) if fv["review_status"] != "pending" else model_value
     upd: dict[str, Any] = {"updated_at": _now()}
