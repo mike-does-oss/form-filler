@@ -2,7 +2,9 @@
 # Use with: FORMFILLER_CONFIG=config.dev.yaml
 llm:
   model: gemma4:12b
-  context_budget_tokens: 24000
+  context_budget_tokens: 10000
+  num_ctx: 12288
+  keep_alive: 1m
 embeddings:
   model: bge-m3
 ocr:

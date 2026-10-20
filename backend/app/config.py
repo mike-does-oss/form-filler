@@ -24,8 +24,9 @@ class LLMConfig(BaseModel):
     base_url: str = "http://localhost:11434"
     model: str = "qwen2.5:14b-instruct"
     temperature: float = 0.0
-    context_budget_tokens: int = 24000
-    num_ctx: int = 32768
+    context_budget_tokens: int = 12000
+    num_ctx: int = 16384  # KV cache size per request slot; the biggest memory lever after model size
+    keep_alive: str = "5m"  # how long Ollama keeps models loaded after the last request
     request_timeout_s: float = 600.0
     trace: bool = False  # append every LLM call to <data_dir>/llm_trace.jsonl (local debugging)
     api_key: str | None = None  # vLLM only, optional
@@ -64,14 +65,14 @@ class JudgmentConfig(BaseModel):
     model: str | None = None
     self_consistency_runs: int = 5
     temperature: float = 0.6
-    parallel_runs: int = 5
+    parallel_runs: int = 1  # >1 only helps if the server has spare memory (OLLAMA_NUM_PARALLEL)
 
 
 class ExtractionConfig(BaseModel):
     batch_min: int = 5
     batch_max: int = 15
     max_fewshot: int = 5
-    parallel_batches: int = 2
+    parallel_batches: int = 1
 
 
 class StorageConfig(BaseModel):

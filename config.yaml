@@ -3,7 +3,9 @@ llm:
   base_url: http://localhost:11434
   model: qwen2.5:14b-instruct
   temperature: 0
-  context_budget_tokens: 24000
+  context_budget_tokens: 12000  # sources up to this size are passed whole
+  num_ctx: 16384               # raise on a 24 GB GPU (e.g. 32768) if you have headroom
+  keep_alive: 5m               # unload models after this much idle time
 vision:
   enabled: false
   model: qwen2.5vl:7b
@@ -21,6 +23,7 @@ judgment:
   model: null              # null = use llm.model
   self_consistency_runs: 5
   temperature: 0.6
+  parallel_runs: 1         # concurrent self-consistency calls
 storage:
   data_dir: ./data
 server:

@@ -1,0 +1,46 @@
+# App + Ollama. The app port is published on 127.0.0.1 only.
+#   docker compose up -d
+#   docker compose run --rm pull-models      # one-time: pulls the models named below
+services:
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama:/root/.ollama
+    environment:
+      - OLLAMA_NUM_PARALLEL=4
+    # NVIDIA GPU (remove this block for CPU-only; on Apple Silicon run Ollama natively instead)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  pull-models:
+    image: ollama/ollama:latest
+    profiles: ["setup"]
+    depends_on: [ollama]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["/bin/sh", "-c", "ollama pull ${LLM_MODEL:-qwen2.5:14b-instruct} && ollama pull ${EMBED_MODEL:-bge-m3} && ollama pull ${VISION_MODEL:-qwen2.5vl:7b}"]
+
+  app:
+    build: .
+    depends_on: [ollama]
+    environment:
+      - FF__LLM__BASE_URL=http://ollama:11434
+      - FF__LLM__MODEL=${LLM_MODEL:-qwen2.5:14b-instruct}
+      - FF__EMBEDDINGS__MODEL=${EMBED_MODEL:-bge-m3}
+      - FF__SERVER__HOST=0.0.0.0          # inside the container; published to 127.0.0.1 below
+      - FF__STORAGE__DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+      - ./config.yaml:/app/config.yaml:ro
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+volumes:
+  ollama:

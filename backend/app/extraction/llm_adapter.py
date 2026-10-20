@@ -142,6 +142,7 @@ class OllamaAdapter(LLMAdapter):
             "format": schema,
             "stream": False,
             "options": options,
+            "keep_alive": self.cfg.llm.keep_alive,
         }
         if "thinking" in self._capabilities(model):
             body["think"] = False
@@ -172,7 +173,7 @@ class OllamaAdapter(LLMAdapter):
             try:
                 r = self.client.post(
                     f"{self.embed_base}/api/embed",
-                    json={"model": self.cfg.embeddings.model, "input": batch, "truncate": True},
+                    json={"model": self.cfg.embeddings.model, "input": batch, "truncate": True, "keep_alive": self.cfg.llm.keep_alive},
                 )
             except httpx.HTTPError as e:
                 raise LLMError(f"embedding request failed: {e}") from e
