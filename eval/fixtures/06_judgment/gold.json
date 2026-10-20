@@ -1,0 +1,75 @@
+{
+  "name": "06_judgment",
+  "description": "Judgment fields: clear yes, reasoning-to-no, and a cannot_determine with missing facts.",
+  "form": "form.pdf",
+  "fields": [
+    {
+      "label": "Full name",
+      "value": "Mei Chen"
+    },
+    {
+      "label": "Date of birth",
+      "value": "1958-02-02"
+    },
+    {
+      "label": "Pensioner Concession Card number",
+      "value": "312 456 789A"
+    },
+    {
+      "label": "Were you aged 65 or over on 1 January 2025?",
+      "kind": "judgment",
+      "value": "Yes",
+      "facts": {
+        "date of birth": "1958-02-02"
+      }
+    },
+    {
+      "label": "Do you hold a current Pensioner Concession Card?",
+      "kind": "judgment",
+      "value": "Yes",
+      "facts": {
+        "card expiry date": "2026-09-30"
+      }
+    },
+    {
+      "label": "Are you eligible for the energy rebate?",
+      "kind": "judgment",
+      "value": "No",
+      "facts": {
+        "electricity account holder": "Robert Chen",
+        "holds concession card": "yes"
+      }
+    },
+    {
+      "label": "Do you qualify for the water concession?",
+      "kind": "judgment",
+      "value": "cannot_determine",
+      "missing_facts": [
+        "owns home or tenant paying water charges",
+        "received water concession in the last 12 months"
+      ],
+      "user_answers": [
+        {
+          "match": [
+            "own",
+            "tenant",
+            "home",
+            "water charges",
+            "ownership"
+          ],
+          "value": "Yes"
+        },
+        {
+          "match": [
+            "received",
+            "last 12 months",
+            "previous",
+            "already"
+          ],
+          "value": "No"
+        }
+      ],
+      "value_after_answers": "Yes"
+    }
+  ]
+}

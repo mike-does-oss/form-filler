@@ -1,0 +1,77 @@
+{
+  "name": "01_acroform_basic",
+  "description": "Fillable PDF, native sources, a derived total, a judgment field with a notes page.",
+  "form": "form.pdf",
+  "fields": [
+    {
+      "label": "Full name",
+      "value": "Priya Natarajan"
+    },
+    {
+      "label": "Previous surname (if any)",
+      "value": null
+    },
+    {
+      "label": "Date of birth (DD/MM/YYYY)",
+      "value": "1990-03-14"
+    },
+    {
+      "label": "Email address",
+      "value": "priya.natarajan@example.com"
+    },
+    {
+      "label": "Mobile phone",
+      "value": "0412 345 678"
+    },
+    {
+      "label": "Residential address",
+      "value": "27 Wattle Grove, Carlton VIC 3053"
+    },
+    {
+      "label": "Marital status",
+      "value": "Married"
+    },
+    {
+      "label": "Occupation",
+      "value": "Senior Logistics Coordinator"
+    },
+    {
+      "label": "Employer ABN",
+      "value": "51 824 753 556"
+    },
+    {
+      "label": "Annual salary ($)",
+      "value": "92500.00"
+    },
+    {
+      "label": "Interest income ($)",
+      "value": "1284.37"
+    },
+    {
+      "label": "Total income ($)",
+      "value": "93784.37",
+      "derived": true
+    },
+    {
+      "label": "Were you an Australian resident for tax purposes in 2023-24?",
+      "kind": "judgment",
+      "value": "Yes",
+      "facts": {
+        "days present in Australia during 2023-24": "241"
+      }
+    },
+    {
+      "label": "I would like to receive the client newsletter",
+      "value": null
+    },
+    {
+      "label": "Signature of applicant",
+      "value": null,
+      "skip_eval": true
+    },
+    {
+      "label": "Date signed",
+      "value": null
+    }
+  ]
+}

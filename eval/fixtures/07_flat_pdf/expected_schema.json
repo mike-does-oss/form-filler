@@ -1,0 +1,52 @@
+[
+  {
+    "label": "Full name",
+    "type": "text",
+    "section": "Member details"
+  },
+  {
+    "label": "Date of birth",
+    "type": "date",
+    "section": "Member details"
+  },
+  {
+    "label": "Street address",
+    "type": "text",
+    "section": "Member details"
+  },
+  {
+    "label": "Suburb and postcode",
+    "type": "text",
+    "section": "Member details"
+  },
+  {
+    "label": "Phone",
+    "type": "phone",
+    "section": "Member details"
+  },
+  {
+    "label": "Email",
+    "type": "email",
+    "section": "Member details"
+  },
+  {
+    "label": "Send me the monthly events newsletter",
+    "type": "checkbox",
+    "section": "Preferences"
+  },
+  {
+    "label": "Preferred branch",
+    "type": "text",
+    "section": "Preferences"
+  },
+  {
+    "label": "Signature",
+    "type": "signature",
+    "section": "Preferences"
+  },
+  {
+    "label": "Date",
+    "type": "date",
+    "section": "Preferences"
+  }
+]

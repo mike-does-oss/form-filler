@@ -1,0 +1,64 @@
+{
+  "name": "02_docx_form",
+  "description": "Word form: content controls, label/value table, blank lines, checkbox glyphs; DOCX source.",
+  "form": "form.docx",
+  "fields": [
+    {
+      "label": "Full name",
+      "value": "Amara Okafor"
+    },
+    {
+      "label": "Date of birth",
+      "value": "1996-11-07"
+    },
+    {
+      "label": "Preferred contact method",
+      "value": "Email"
+    },
+    {
+      "label": "Email",
+      "value": "amara.okafor@example.org"
+    },
+    {
+      "label": "Phone",
+      "value": "0433 908 172"
+    },
+    {
+      "label": "Suburb",
+      "value": "Abbotsford"
+    },
+    {
+      "label": "Postcode",
+      "value": "3067"
+    },
+    {
+      "label": "Days available per week",
+      "value": "3"
+    },
+    {
+      "label": "Emergency contact name",
+      "value": "Chidi Okafor"
+    },
+    {
+      "label": "Relationship",
+      "value": "Brother"
+    },
+    {
+      "label": "Do you hold a current driver licence?",
+      "value": "Yes"
+    },
+    {
+      "label": "Police check consent",
+      "value": null
+    },
+    {
+      "label": "Signature",
+      "value": null,
+      "skip_eval": true
+    },
+    {
+      "label": "Date",
+      "value": null
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+[
+  {
+    "label": "Full name",
+    "type": "text",
+    "section": "Personal details"
+  },
+  {
+    "label": "Date of birth",
+    "type": "date",
+    "section": "Personal details"
+  },
+  {
+    "label": "Preferred contact method",
+    "type": "choice",
+    "options": [
+      "Email",
+      "Phone",
+      "Post"
+    ],
+    "section": "Personal details"
+  },
+  {
+    "label": "Email",
+    "type": "email",
+    "section": "Contact details"
+  },
+  {
+    "label": "Phone",
+    "type": "phone",
+    "section": "Contact details"
+  },
+  {
+    "label": "Suburb",
+    "type": "text",
+    "section": "Contact details"
+  },
+  {
+    "label": "Postcode",
+    "type": "text",
+    "section": "Contact details"
+  },
+  {
+    "label": "Days available per week",
+    "type": "number",
+    "section": "Availability"
+  },
+  {
+    "label": "Emergency contact name",
+    "type": "text",
+    "section": "Availability"
+  },
+  {
+    "label": "Relationship",
+    "type": "text",
+    "section": "Availability"
+  },
+  {
+    "label": "Do you hold a current driver licence?",
+    "type": "choice",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "section": "Availability"
+  },
+  {
+    "label": "Police check consent",
+    "type": "checkbox",
+    "section": "Availability"
+  },
+  {
+    "label": "Signature",
+    "type": "signature",
+    "section": "Declaration"
+  },
+  {
+    "label": "Date",
+    "type": "date",
+    "section": "Declaration"
+  }
+]

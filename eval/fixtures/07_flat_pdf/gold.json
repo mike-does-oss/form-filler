@@ -1,0 +1,48 @@
+{
+  "name": "07_flat_pdf",
+  "description": "Flat PDF with no form fields: underscores, drawn lines and a box.",
+  "form": "form.pdf",
+  "fields": [
+    {
+      "label": "Full name",
+      "value": "Lucas Ferreira"
+    },
+    {
+      "label": "Date of birth",
+      "value": "2001-01-21"
+    },
+    {
+      "label": "Street address",
+      "value": "12 Moonah Avenue"
+    },
+    {
+      "label": "Suburb and postcode",
+      "value": "Glenroy VIC 3046"
+    },
+    {
+      "label": "Phone",
+      "value": "0491 220 846"
+    },
+    {
+      "label": "Email",
+      "value": "lucas.ferreira@example.com"
+    },
+    {
+      "label": "Send me the monthly events newsletter",
+      "value": false
+    },
+    {
+      "label": "Preferred branch",
+      "value": "Glenroy"
+    },
+    {
+      "label": "Signature",
+      "value": null,
+      "skip_eval": true
+    },
+    {
+      "label": "Date",
+      "value": null
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+data/
+.venv/
+__pycache__/
+*.pyc
+frontend/node_modules/
+frontend/dist/
+eval/results/
+eval/fixtures/*/generated/
+.pytest_cache/
+data-ui/

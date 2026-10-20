@@ -1,0 +1,92 @@
+[
+  {
+    "label": "Full name",
+    "type": "text",
+    "section": "Section A - Personal details"
+  },
+  {
+    "label": "Previous surname (if any)",
+    "type": "text",
+    "section": "Section A - Personal details"
+  },
+  {
+    "label": "Date of birth (DD/MM/YYYY)",
+    "type": "date",
+    "section": "Section A - Personal details"
+  },
+  {
+    "label": "Email address",
+    "type": "email",
+    "section": "Section A - Personal details"
+  },
+  {
+    "label": "Mobile phone",
+    "type": "phone",
+    "section": "Section A - Personal details"
+  },
+  {
+    "label": "Residential address",
+    "type": "multiline",
+    "section": "Section A - Personal details"
+  },
+  {
+    "label": "Marital status",
+    "type": "choice",
+    "options": [
+      "Single",
+      "Married",
+      "De facto",
+      "Other"
+    ],
+    "section": "Section A - Personal details"
+  },
+  {
+    "label": "Occupation",
+    "type": "text",
+    "section": "Section B - Employment and income"
+  },
+  {
+    "label": "Employer ABN",
+    "type": "text",
+    "section": "Section B - Employment and income"
+  },
+  {
+    "label": "Annual salary ($)",
+    "type": "currency",
+    "section": "Section B - Employment and income"
+  },
+  {
+    "label": "Interest income ($)",
+    "type": "currency",
+    "section": "Section B - Employment and income"
+  },
+  {
+    "label": "Total income ($)",
+    "type": "currency",
+    "section": "Section B - Employment and income"
+  },
+  {
+    "label": "Were you an Australian resident for tax purposes in 2023-24?",
+    "type": "choice",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "section": "Section C - Tax residency"
+  },
+  {
+    "label": "I would like to receive the client newsletter",
+    "type": "checkbox",
+    "section": "Section D - Declaration"
+  },
+  {
+    "label": "Signature of applicant",
+    "type": "signature",
+    "section": "Section D - Declaration"
+  },
+  {
+    "label": "Date signed",
+    "type": "date",
+    "section": "Section D - Declaration"
+  }
+]

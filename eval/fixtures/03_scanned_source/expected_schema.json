@@ -1,0 +1,47 @@
+[
+  {
+    "label": "Buyer full name",
+    "type": "text",
+    "section": "Buyer details"
+  },
+  {
+    "label": "Driver licence number",
+    "type": "text",
+    "section": "Buyer details"
+  },
+  {
+    "label": "Licence expiry date",
+    "type": "date",
+    "section": "Buyer details"
+  },
+  {
+    "label": "Buyer address",
+    "type": "multiline",
+    "section": "Buyer details"
+  },
+  {
+    "label": "Registration number",
+    "type": "text",
+    "section": "Vehicle and sale details"
+  },
+  {
+    "label": "VIN",
+    "type": "text",
+    "section": "Vehicle and sale details"
+  },
+  {
+    "label": "Sale price ($)",
+    "type": "currency",
+    "section": "Vehicle and sale details"
+  },
+  {
+    "label": "Date of sale",
+    "type": "date",
+    "section": "Vehicle and sale details"
+  },
+  {
+    "label": "Odometer reading (km)",
+    "type": "number",
+    "section": "Vehicle and sale details"
+  }
+]

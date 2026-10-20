@@ -1,0 +1,53 @@
+[
+  {
+    "label": "Full name",
+    "type": "text",
+    "section": "Part A - Applicant"
+  },
+  {
+    "label": "Date of birth",
+    "type": "date",
+    "section": "Part A - Applicant"
+  },
+  {
+    "label": "Pensioner Concession Card number",
+    "type": "text",
+    "section": "Part A - Applicant"
+  },
+  {
+    "label": "Were you aged 65 or over on 1 January 2025?",
+    "type": "choice",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "section": "Part B - Eligibility"
+  },
+  {
+    "label": "Do you hold a current Pensioner Concession Card?",
+    "type": "choice",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "section": "Part B - Eligibility"
+  },
+  {
+    "label": "Are you eligible for the energy rebate?",
+    "type": "choice",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "section": "Part B - Eligibility"
+  },
+  {
+    "label": "Do you qualify for the water concession?",
+    "type": "choice",
+    "options": [
+      "Yes",
+      "No"
+    ],
+    "section": "Part B - Eligibility"
+  }
+]

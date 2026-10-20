@@ -1,0 +1,43 @@
+{
+  "name": "03_scanned_source",
+  "description": "Fillable PDF with scanned (image-only) sources that need OCR.",
+  "form": "form.pdf",
+  "fields": [
+    {
+      "label": "Buyer full name",
+      "value": "Marcus James Taylor"
+    },
+    {
+      "label": "Driver licence number",
+      "value": "2847 1956"
+    },
+    {
+      "label": "Licence expiry date",
+      "value": "2029-11-22"
+    },
+    {
+      "label": "Buyer address",
+      "value": "41 Kurrajong Road, Wagga Wagga NSW 2650"
+    },
+    {
+      "label": "Registration number",
+      "value": "XKD-482"
+    },
+    {
+      "label": "VIN",
+      "value": "6T1BF3EK7DX123456"
+    },
+    {
+      "label": "Sale price ($)",
+      "value": "18750.00"
+    },
+    {
+      "label": "Date of sale",
+      "value": "2024-08-03"
+    },
+    {
+      "label": "Odometer reading (km)",
+      "value": "148920"
+    }
+  ]
+}

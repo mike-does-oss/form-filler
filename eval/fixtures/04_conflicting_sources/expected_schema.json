@@ -1,0 +1,32 @@
+[
+  {
+    "label": "Full name",
+    "type": "text",
+    "section": "Your details"
+  },
+  {
+    "label": "Customer number",
+    "type": "text",
+    "section": "Your details"
+  },
+  {
+    "label": "Date of birth",
+    "type": "date",
+    "section": "Your details"
+  },
+  {
+    "label": "Current residential address",
+    "type": "multiline",
+    "section": "Your details"
+  },
+  {
+    "label": "Phone number",
+    "type": "phone",
+    "section": "Your details"
+  },
+  {
+    "label": "Email address",
+    "type": "email",
+    "section": "Your details"
+  }
+]

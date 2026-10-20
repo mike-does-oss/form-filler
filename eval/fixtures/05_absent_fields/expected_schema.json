@@ -1,0 +1,72 @@
+[
+  {
+    "label": "Policy number",
+    "type": "text",
+    "section": "Policy details"
+  },
+  {
+    "label": "Policyholder name",
+    "type": "text",
+    "section": "Policy details"
+  },
+  {
+    "label": "Other insurer (if any)",
+    "type": "text",
+    "section": "Policy details"
+  },
+  {
+    "label": "Date of incident",
+    "type": "date",
+    "section": "Incident details"
+  },
+  {
+    "label": "Location of incident",
+    "type": "text",
+    "section": "Incident details"
+  },
+  {
+    "label": "Estimated claim amount ($)",
+    "type": "currency",
+    "section": "Incident details"
+  },
+  {
+    "label": "Injury description (if any)",
+    "type": "multiline",
+    "section": "Incident details"
+  },
+  {
+    "label": "Hospital attended",
+    "type": "text",
+    "section": "Incident details"
+  },
+  {
+    "label": "Witness name",
+    "type": "text",
+    "section": "Witness and police"
+  },
+  {
+    "label": "Witness phone",
+    "type": "phone",
+    "section": "Witness and police"
+  },
+  {
+    "label": "Police report number",
+    "type": "text",
+    "section": "Witness and police"
+  },
+  {
+    "label": "BSB",
+    "type": "text",
+    "section": "Payment details"
+  },
+  {
+    "label": "Account number",
+    "type": "text",
+    "section": "Payment details"
+  },
+  {
+    "label": "Number of previous claims",
+    "type": "number",
+    "section": "Payment details"
+  }
+]

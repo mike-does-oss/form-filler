@@ -1,0 +1,30 @@
+llm:
+  backend: ollama          # ollama | vllm
+  base_url: http://localhost:11434
+  model: qwen2.5:14b-instruct
+  temperature: 0
+  context_budget_tokens: 24000
+vision:
+  enabled: false
+  model: qwen2.5vl:7b
+embeddings:
+  model: bge-m3
+ocr:
+  engine: docling          # docling | paddleocr | tesseract (falls back to tesseract if not installed)
+  language: en
+retrieval:
+  k: 8
+  use_full_context_if_fits: true
+verification:
+  fuzzy_threshold: 90
+judgment:
+  model: null              # null = use llm.model
+  self_consistency_runs: 5
+  temperature: 0.6
+storage:
+  data_dir: ./data
+server:
+  host: 127.0.0.1
+  port: 8080
+  workers: 2
+  worker_mode: process     # process | thread

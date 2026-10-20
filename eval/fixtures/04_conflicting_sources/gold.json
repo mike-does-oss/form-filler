@@ -1,0 +1,34 @@
+{
+  "name": "04_conflicting_sources",
+  "description": "Two sources give different addresses; one phone agrees; email absent.",
+  "form": "form.pdf",
+  "fields": [
+    {
+      "label": "Full name",
+      "value": "Tomasz Kowalczyk"
+    },
+    {
+      "label": "Customer number",
+      "value": "BW-5531-208"
+    },
+    {
+      "label": "Date of birth",
+      "value": "1979-06-30"
+    },
+    {
+      "label": "Current residential address",
+      "conflict": [
+        "8 Banksia Street, Fitzroy VIC 3065",
+        "15/220 Lygon Street, Brunswick East VIC 3057"
+      ]
+    },
+    {
+      "label": "Phone number",
+      "value": "0400 111 222"
+    },
+    {
+      "label": "Email address",
+      "value": null
+    }
+  ]
+}

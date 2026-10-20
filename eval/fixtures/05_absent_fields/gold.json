@@ -1,0 +1,63 @@
+{
+  "name": "05_absent_fields",
+  "description": "Most fields are absent from the sources; distractor numbers present.",
+  "form": "form.pdf",
+  "fields": [
+    {
+      "label": "Policy number",
+      "value": "HM-77310492"
+    },
+    {
+      "label": "Policyholder name",
+      "value": "Sofia Lindqvist"
+    },
+    {
+      "label": "Other insurer (if any)",
+      "value": null
+    },
+    {
+      "label": "Date of incident",
+      "value": "2024-05-17"
+    },
+    {
+      "label": "Location of incident",
+      "value": "Coles car park on Sydney Road, Coburg"
+    },
+    {
+      "label": "Estimated claim amount ($)",
+      "value": "2340.00"
+    },
+    {
+      "label": "Injury description (if any)",
+      "value": null
+    },
+    {
+      "label": "Hospital attended",
+      "value": null
+    },
+    {
+      "label": "Witness name",
+      "value": null
+    },
+    {
+      "label": "Witness phone",
+      "value": null
+    },
+    {
+      "label": "Police report number",
+      "value": null
+    },
+    {
+      "label": "BSB",
+      "value": null
+    },
+    {
+      "label": "Account number",
+      "value": null
+    },
+    {
+      "label": "Number of previous claims",
+      "value": null
+    }
+  ]
+}
