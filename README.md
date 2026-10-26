@@ -167,3 +167,7 @@ eval/           fixtures + run_eval.py
   so DOCX, image and PDF sources all display the same way.
 - Out of scope for v1: web forms, handwriting beyond what the vision model handles, digital
   signatures (signature fields are listed as "requires manual signing"), multi-user auth.
+
+## License
+
+AGPL-3.0. See [LICENSE](LICENSE).
