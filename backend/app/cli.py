@@ -1,4 +1,4 @@
-"""Command line: serve, health, delete-job, batch."""
+"""Command line: setup, serve, health, delete-job, batch."""
 
 from __future__ import annotations
 
@@ -14,7 +14,10 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="form-filler")
     ap.add_argument("--config", help="path to config.yaml")
     sub = ap.add_subparsers(dest="cmd", required=True)
-    sub.add_parser("serve", help="run the web app")
+    st = sub.add_parser("setup", help="install/start Ollama if missing and download the configured models")
+    st.add_argument("-y", "--yes", action="store_true", help="don't ask before installing or downloading")
+    sv = sub.add_parser("serve", help="run the web app (offers to set up Ollama first if it isn't running)")
+    sv.add_argument("--skip-setup", action="store_true", help="don't check for Ollama before starting")
     sub.add_parser("health", help="check model server, models and OCR")
     d = sub.add_parser("delete-job", help="delete a job's files, chunks, embeddings and values")
     d.add_argument("job_id", type=int)
@@ -31,8 +34,25 @@ def main(argv: list[str] | None = None) -> int:
 
     cfg = get_config()
 
+    if args.cmd == "setup":
+        from app.setup_ollama import SetupError, ensure
+
+        try:
+            return 0 if ensure(cfg, assume_yes=args.yes) else 1
+        except SetupError as e:
+            print(f"setup failed: {e}", file=sys.stderr)
+            return 1
     if args.cmd == "serve":
         import uvicorn
+
+        if not args.skip_setup:
+            from app.setup_ollama import SetupError, ensure
+
+            try:
+                if not ensure(cfg):
+                    print("Starting anyway; filling forms needs Ollama and the models.", file=sys.stderr)
+            except SetupError as e:
+                print(f"Ollama setup failed ({e}); starting anyway.", file=sys.stderr)
 
         if cfg.server.host not in ("127.0.0.1", "localhost", "::1"):
             print(f"WARNING: binding to {cfg.server.host}; the app has no authentication.", file=sys.stderr)

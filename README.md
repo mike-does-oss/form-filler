@@ -15,17 +15,18 @@ time the same form comes in.
 ## Quick start (uv + Ollama, macOS or Linux)
 
 ```bash
-# 1. models (one time)
-ollama pull qwen2.5:14b-instruct      # extraction + judgment (config: llm.model)
-ollama pull bge-m3                    # embeddings
 brew install tesseract                # or: apt install tesseract-ocr  (CPU OCR fallback)
-
-# 2. app
 uv sync                               # add `--extra docling` for the Docling OCR/layout engine
 cd frontend && npm install && npm run build && cd ..
-uv run form-filler health             # checks model server, models and OCR
+uv run form-filler setup              # installs + starts Ollama if missing, pulls the configured models
 uv run form-filler serve              # http://127.0.0.1:8080
 ```
+
+`setup` asks before installing anything (`-y` to skip the questions). On macOS it uses
+Homebrew when present, otherwise the official Ollama app; on Linux the official install script;
+on Windows winget. It's the only command that goes online. `serve` runs the same check first
+and offers to set Ollama up if it isn't running (`--skip-setup` to turn that off).
+`uv run form-filler health` reports the model server, models and OCR.
 
 To use a model you already have, override the config without editing it:
 `FF__LLM__MODEL=gemma4:12b uv run form-filler serve`, or point `FORMFILLER_CONFIG` at another
