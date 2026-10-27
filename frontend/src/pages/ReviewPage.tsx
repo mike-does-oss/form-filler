@@ -304,8 +304,13 @@ export function ReviewPage({ jobId }: { jobId: number }) {
     <div className="review">
       <div className="review-bar">
         <div className="rb-title">
-          <a href="#/" className="muted small">← Jobs</a>
+          {job.batch_id ? (
+            <a href={`#/batches/${job.batch_id}`} className="muted small">← Batch</a>
+          ) : (
+            <a href="#/" className="muted small">← Jobs</a>
+          )}
           <h1 className="h1 ellipsis" title={job.form?.filename}>{job.form?.filename ?? `Job ${job.id}`}</h1>
+          {job.label && <span className="chip" title="Batch set">{job.label}</span>}
           <span className="muted small nowrap">Job #{job.id}</span>
         </div>
         <div className="rb-progress" title={`${reviewed} of ${reviewable.length} fields reviewed`}>

@@ -558,3 +558,25 @@ label.check { display: flex; gap: 6px; align-items: center; margin: 8px 0; }
 .input-title { width: auto; field-sizing: content; min-width: 160px; }
 .panel-head .input { width: 220px; max-width: 100%; }
 .rule-body > .btn, .rule-body > .seg { align-self: flex-start; }
+
+/* ---------------------------------------------------------------- batches */
+.grow { flex: 1 1 auto; min-width: 0; }
+.row-actions.wrap { flex-wrap: wrap; }
+.batch-intro { margin: 4px 0 6px; }
+.foldertree { margin: 8px 0 0; padding: 8px 10px; background: var(--surface-2); border-radius: var(--radius); font-family: var(--mono); line-height: 1.5; overflow-x: auto; }
+.setlist { margin-top: 8px; }
+.setlist td .ellipsis { max-width: 320px; }
+.folder-ico { color: var(--accent); font-size: 11px; }
+.skipped { margin-top: 8px; }
+.skipped summary { cursor: pointer; }
+.batch-name { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; max-width: 360px; }
+.batch-summary { display: flex; align-items: center; gap: 12px; margin: 4px 0 8px; }
+.batch-summary .pbar { flex: 1 1 auto; max-width: 420px; }
+.batch-progress { display: inline-flex; gap: 6px; align-items: center; }
+.batch-chip { margin-left: 6px; font-size: 11px; }
+.warn-text { color: var(--warn); }
+.batch-detail .panel-head { align-items: flex-start; }
+@media (max-width: 720px) {
+  .batch-detail .panel-head { flex-direction: column; }
+  .setlist td .ellipsis { max-width: 180px; }
+}

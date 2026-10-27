@@ -70,6 +70,7 @@ def _job_out(job_id: int) -> dict:
         "stage": j["stage"],
         "error": j["error"],
         "batch_id": j["batch_id"],
+        "label": j["label"],
         "stats": db.loads(j["stats_json"], {}),
         "created_at": j["created_at"],
         "started_at": j["started_at"],
@@ -201,7 +202,7 @@ def create_job(body: JobCreate) -> dict:
 @router.get("/jobs")
 def list_jobs(limit: int = 50) -> list[dict]:
     rows = db.q(
-        """SELECT j.id, j.form_id, j.status, j.progress, j.stage, j.created_at, j.batch_id, f.filename AS form_filename
+        """SELECT j.id, j.form_id, j.status, j.progress, j.stage, j.created_at, j.batch_id, j.label, f.filename AS form_filename
            FROM jobs j JOIN forms f ON f.id = j.form_id ORDER BY j.id DESC LIMIT ?""",
         (limit,),
     )
@@ -507,47 +508,73 @@ def cross_rules() -> list[str]:
 # ------------------------------------------------------------------ batch mode
 class BatchCreate(BaseModel):
     form_id: int
-    count: int
+    name: str | None = None
+    sets: list[str] | None = None  # one folder name per set
+    count: int | None = None  # older API: N unnamed sets
 
 
 @router.post("/batches")
 def create_batch(body: BatchCreate) -> dict:
-    """Create N jobs for one form; upload documents to each job, then POST /batches/{id}/run."""
-    batch_id = uuid.uuid4().hex[:12]
-    ids = [db.insert("jobs", {"form_id": body.form_id, "status": "created", "batch_id": batch_id}) for _ in range(body.count)]
-    return {"batch_id": batch_id, "job_ids": ids}
+    """Create one job per set. Upload each set's files to /jobs/{id}/documents, then POST /batches/{id}/run."""
+    from app.jobs import batch
+
+    labels = body.sets or [f"set {i}" for i in range(1, (body.count or 0) + 1)]
+    try:
+        return batch.create_batch(body.form_id, labels, body.name)
+    except batch.BatchError as e:
+        raise HTTPException(404 if "not found" in str(e) else 400, str(e)) from e
+
+
+@router.get("/batches")
+def list_batches(limit: int = 50) -> list[dict]:
+    from app.jobs import batch
+
+    return batch.list_batches(limit)
 
 
 @router.post("/batches/{batch_id}/run")
 def run_batch(batch_id: str) -> dict:
-    ids = [r["id"] for r in db.q("SELECT id FROM jobs WHERE batch_id = ?", (batch_id,))]
-    for i in ids:
-        enqueue(i)
+    from app.jobs import batch
+
+    out = batch_status(batch_id)
+    for j in out["jobs"]:
+        if j["status"] in ("created", "failed") and j["documents"]:
+            enqueue(j["id"])
     return batch_status(batch_id)
 
 
 @router.get("/batches/{batch_id}")
 def batch_status(batch_id: str) -> dict:
-    rows = db.q("SELECT id, status, progress, started_at, finished_at, stats_json FROM jobs WHERE batch_id = ?", (batch_id,))
-    if not rows:
-        raise HTTPException(404, "batch not found")
-    done = [r for r in rows if r["status"] == "done"]
-    out: dict[str, Any] = {
-        "batch_id": batch_id,
-        "jobs": [{k: r[k] for k in ("id", "status", "progress")} for r in rows],
-        "done": len(done),
-        "failed": sum(r["status"] == "failed" for r in rows),
-        "total": len(rows),
-    }
-    starts = [r["started_at"] for r in rows if r["started_at"]]
-    ends = [r["finished_at"] for r in done if r["finished_at"]]
-    if starts and ends:
-        span = db.q1("SELECT (julianday(?) - julianday(?)) * 86400.0 AS s", (max(ends), min(starts)))["s"]
-        pages = sum(db.loads(r["stats_json"], {}).get("pages", 0) for r in done)
-        out["elapsed_s"] = round(span, 1)
-        out["forms_per_minute"] = round(len(done) / span * 60, 2) if span else None
-        out["pages_per_minute"] = round(pages / span * 60, 2) if span else None
-    return out
+    from app.jobs import batch
+
+    try:
+        return batch.batch_out(batch_id)
+    except KeyError as e:
+        raise HTTPException(404, "batch not found") from e
+
+
+@router.get("/batches/{batch_id}/export.zip")
+def export_batch(batch_id: str, format: Literal["filled", "flattened"] = "filled") -> FileResponse:
+    from app.jobs import batch
+
+    b = batch_status(batch_id)
+    if not b["done"]:
+        raise HTTPException(409, "no set has finished yet")
+    out = get_config().data_path / "exports" / f"batch-{batch_id}.zip"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    batch.export_zip(batch_id, out, flatten=format == "flattened")
+    jobs.audit(None, None, "batch_export", None, {"batch_id": batch_id, "format": format})
+    return FileResponse(out, media_type="application/zip", filename=f"{batch.safe_name(b['name'])}.zip")
+
+
+@router.delete("/batches/{batch_id}")
+def delete_batch(batch_id: str) -> dict:
+    from app.jobs import batch
+
+    batch_status(batch_id)
+    batch.delete_batch(batch_id)
+    (get_config().data_path / "exports" / f"batch-{batch_id}.zip").unlink(missing_ok=True)
+    return {"deleted": batch_id}
 
 
 _ = shutil

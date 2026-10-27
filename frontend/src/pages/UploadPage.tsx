@@ -6,8 +6,8 @@ import { JobRunPanel } from "../components/JobProgress";
 import { toast } from "../components/Toast";
 import { navigate } from "../router";
 
-const FORM_TYPE_LABEL: Record<string, string> = { acroform: "Fillable PDF", docx: "Word document", flat_pdf: "Flat PDF" };
-const SOURCE_EXT = ".pdf,.docx,.png,.jpg,.jpeg,.tif,.tiff,.txt";
+export const FORM_TYPE_LABEL: Record<string, string> = { acroform: "Fillable PDF", docx: "Word document", flat_pdf: "Flat PDF" };
+export const SOURCE_EXT = ".pdf,.docx,.png,.jpg,.jpeg,.tif,.tiff,.txt";
 
 export function UploadPage() {
   const [form, setForm] = useState<Form | null>(null);
@@ -206,6 +206,7 @@ export function UploadPage() {
                     <td className="mono">{j.id}</td>
                     <td className="ellipsis" title={j.form_filename}>
                       <a href={`#/jobs/${j.id}`}>{j.form_filename}</a>
+                      {j.batch_id && <a className="chip batch-chip" href={`#/batches/${j.batch_id}`} title="Part of a batch">{j.label ?? "batch"}</a>}
                     </td>
                     <td><JobStatusChip status={j.status} progress={j.progress} /></td>
                     <td className="muted nowrap">{fmtDate(j.created_at)}</td>
@@ -224,7 +225,7 @@ export function UploadPage() {
   );
 }
 
-function Elapsed() {
+export function Elapsed() {
   const [t0] = useState(() => Date.now());
   const [, tick] = useState(0);
   useEffect(() => {
@@ -235,7 +236,7 @@ function Elapsed() {
   return <span className="mono muted small">{Math.floor(s / 60)}:{String(s % 60).padStart(2, "0")}</span>;
 }
 
-function Step({ n, title, done, disabled, children }: { n: number; title: string; done: boolean; disabled?: boolean; children: React.ReactNode }) {
+export function Step({ n, title, done, disabled, children }: { n: number; title: string; done: boolean; disabled?: boolean; children: React.ReactNode }) {
   return (
     <div className={`step${disabled ? " step-disabled" : ""}${done ? " step-done" : ""}`}>
       <div className="step-num" aria-hidden="true">{done ? "✓" : n}</div>
@@ -247,7 +248,7 @@ function Step({ n, title, done, disabled, children }: { n: number; title: string
   );
 }
 
-function FormSummary({ form, onChange }: { form: Form; onChange?: () => void }) {
+export function FormSummary({ form, onChange }: { form: Form; onChange?: () => void }) {
   const s = useMemo(() => {
     const f = form.fields;
     const sections = new Set(f.map((x) => x.section).filter(Boolean));
@@ -314,7 +315,7 @@ export function JobStatusChip({ status, progress }: { status: string; progress?:
   );
 }
 
-function FileIcon({ name }: { name: string }) {
+export function FileIcon({ name }: { name: string }) {
   const ext = name.split(".").pop()?.toUpperCase().slice(0, 4) ?? "";
   return <span className="fileicon" aria-hidden="true">{ext}</span>;
 }

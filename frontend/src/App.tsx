@@ -4,6 +4,7 @@ import { ReviewPage } from "./pages/ReviewPage";
 import { TemplatesPage } from "./pages/TemplatesPage";
 import { TemplateEditor } from "./pages/TemplateEditor";
 import { MapperPage } from "./pages/MapperPage";
+import { BatchDetail, BatchPage } from "./pages/BatchPage";
 import { ToastHost } from "./components/Toast";
 
 export function App() {
@@ -21,6 +22,12 @@ export function App() {
   } else if ((m = match("/forms/:id/map", path))) {
     section = "templates";
     page = <MapperPage key={m.id} formId={Number(m.id)} />;
+  } else if ((m = match("/batches/:id", path))) {
+    section = "batches";
+    page = <BatchDetail key={m.id} batchId={m.id} />;
+  } else if (match("/batches", path)) {
+    section = "batches";
+    page = <BatchPage />;
   } else page = <UploadPage />;
 
   return (
@@ -35,6 +42,7 @@ export function App() {
         </a>
         <nav className="mainnav" aria-label="Main">
           <a href="#/" aria-current={section === "jobs" ? "page" : undefined}>Jobs</a>
+          <a href="#/batches" aria-current={section === "batches" ? "page" : undefined}>Batches</a>
           <a href="#/templates" aria-current={section === "templates" ? "page" : undefined}>Templates</a>
         </nav>
         <span className="local-pill" title="All processing happens on this machine. Documents never leave it.">

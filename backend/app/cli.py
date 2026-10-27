@@ -21,11 +21,12 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("health", help="check model server, models and OCR")
     d = sub.add_parser("delete-job", help="delete a job's files, chunks, embeddings and values")
     d.add_argument("job_id", type=int)
-    b = sub.add_parser("batch", help="fill one form against many source-document sets")
+    b = sub.add_parser("batch", help="fill one form once per folder of source documents")
     b.add_argument("--form", required=True, help="blank form (.pdf/.docx)")
-    b.add_argument("--sets", required=True, help="directory with one sub-directory of source documents per set")
-    b.add_argument("--out", required=True, help="output directory")
-    b.add_argument("--format", default="filled", choices=["filled", "flattened", "json", "csv"])
+    b.add_argument("--sets", required=True, help="folder with one sub-folder of source documents per form to fill")
+    b.add_argument("--out", required=True, help="output folder: one sub-folder per set plus summary.csv")
+    b.add_argument("--format", default="filled", choices=["filled", "flattened"])
+    b.add_argument("--name", help="batch name (default: the --sets folder name)")
     args = ap.parse_args(argv)
 
     if args.config:
@@ -71,50 +72,43 @@ def main(argv: list[str] | None = None) -> int:
         print(f"deleted job {args.job_id}")
         return 0
     if args.cmd == "batch":
-        return _batch(Path(args.form), Path(args.sets), Path(args.out), args.format)
+        return _batch(Path(args.form), Path(args.sets), Path(args.out), args.format, args.name)
     return 1
 
 
-def _batch(form: Path, sets_dir: Path, out: Path, fmt: str) -> int:
-    import shutil
-    import uuid
-
-    from app import db
+def _batch(form: Path, sets_dir: Path, out: Path, fmt: str, name: str | None) -> int:
     from app.forms.service import create_form
-    from app.ingest.normalize import SUPPORTED_EXT, guess_mime
+    from app.jobs import batch
     from app.jobs.pipeline import run_job
-    from app.jobs.service import job_dir
-    from app.writeback.export import export_csv, export_filled, export_json
 
-    out.mkdir(parents=True, exist_ok=True)
+    if not sets_dir.is_dir():
+        print(f"{sets_dir} is not a folder", file=sys.stderr)
+        return 1
     form_id = create_form(form, form.name)
-    batch_id = uuid.uuid4().hex[:12]
-    sets = sorted(p for p in sets_dir.iterdir() if p.is_dir())
+    try:
+        b, skipped = batch.create_batch_from_folder(form_id, sets_dir, name)
+    except batch.BatchError as e:
+        print(str(e), file=sys.stderr)
+        return 1
+    for s in skipped:
+        print(f"skipped {s['path']}: {s['reason']}", file=sys.stderr)
+    print(f"batch {b['id']}: {len(b['jobs'])} sets from {sets_dir}")
     t0 = time.monotonic()
     pages = 0
-    for s in sets:
-        job_id = db.insert("jobs", {"form_id": form_id, "status": "created", "batch_id": batch_id})
-        for f in sorted(s.iterdir()):
-            if f.suffix.lower() not in SUPPORTED_EXT:
-                continue
-            doc_id = db.insert("documents", {"job_id": job_id, "filename": f.name, "stored_path": "", "mime": guess_mime(f.name)})
-            dest = job_dir(job_id) / "docs" / f"{doc_id}{f.suffix.lower()}"
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(f, dest)
-            db.ex("UPDATE documents SET stored_path = ? WHERE id = ?", (str(dest), doc_id))
-        stats = run_job(job_id)
-        pages += stats.get("pages", 0)
-        if fmt == "json":
-            (out / f"{s.name}.json").write_bytes(export_json(job_id))
-        elif fmt == "csv":
-            (out / f"{s.name}.csv").write_bytes(export_csv(job_id))
-        else:
-            path, warnings = export_filled(job_id, flatten=fmt == "flattened")
-            shutil.copyfile(path, out / f"{s.name}{path.suffix}")
-        print(f"{s.name}: job {job_id} done in {stats.get('total_s')}s")
+    for job in b["jobs"]:
+        try:
+            stats = run_job(job["id"])
+            pages += stats.get("pages", 0)
+            print(f"  {job['label']}: done in {stats.get('total_s')}s")
+        except Exception as e:  # noqa: BLE001 - one bad set shouldn't stop the batch
+            print(f"  {job['label']}: FAILED ({e})", file=sys.stderr)
     el = time.monotonic() - t0
-    print(f"{len(sets)} sets, {pages} pages in {el:.1f}s -> {len(sets) / el * 60:.2f} forms/min, {pages / el * 60:.1f} pages/min")
-    return 0
+    batch.write_outputs(b["id"], out, flatten=fmt == "flattened")
+    final = batch.batch_out(b["id"])
+    print(f"{final['done']}/{final['total']} sets filled, {final['needs_review']} fields need review -> {out}/summary.csv")
+    if el > 0:
+        print(f"{pages} pages in {el:.1f}s ({final['done'] / el * 60:.2f} forms/min, {pages / el * 60:.1f} pages/min)")
+    return 0 if final["failed"] == 0 else 2
 
 
 if __name__ == "__main__":

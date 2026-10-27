@@ -64,6 +64,8 @@ export interface Job {
   progress: number;
   stage: string | null;
   error: string | null;
+  batch_id?: string | null;
+  label?: string | null;
   stats: Record<string, unknown>;
   created_at?: string;
   reviewed: number;
@@ -72,7 +74,18 @@ export interface Job {
 }
 export interface JobSummary {
   id: number; form_id: number; status: JobStatus; progress: number; stage: string | null;
-  created_at: string; batch_id: string | null; form_filename: string;
+  created_at: string; batch_id: string | null; label: string | null; form_filename: string;
+}
+
+export interface BatchJob {
+  id: number; label: string; status: JobStatus; progress: number; stage: string | null; error: string | null;
+  documents: number; total_fields: number; filled: number; needs_review: number; reviewed: number;
+}
+export interface Batch {
+  id: string; name: string; created_at: string;
+  form: { id: number; filename: string; form_type: FormType } | null;
+  jobs: BatchJob[]; total: number; done: number; failed: number; running: number; needs_review: number;
+  elapsed_s?: number; forms_per_minute?: number | null; pages_per_minute?: number | null;
 }
 
 export interface Evidence {
@@ -246,6 +259,13 @@ export const api = {
   putRule: (id: number, key: string, body: Partial<Pick<Rule, "facts" | "rule_type" | "rule_code" | "rule_params" | "rubric_text">> & { status: "draft" | "saved" }) =>
     req<Rule>("PUT", `/api/templates/${id}/rules/${encodeURIComponent(key)}`, body),
   proposeRule: (id: number, key: string) => req<Rule>("POST", `/api/templates/${id}/rules/${encodeURIComponent(key)}/propose`),
+  createBatch: (form_id: number, name: string, sets: string[]) => req<Batch>("POST", "/api/batches", { form_id, name, sets }),
+  listBatches: () => req<Batch[]>("GET", "/api/batches"),
+  getBatch: (id: string) => req<Batch>("GET", `/api/batches/${id}`),
+  runBatch: (id: string) => req<Batch>("POST", `/api/batches/${id}/run`),
+  deleteBatch: (id: string) => req<{ deleted: string }>("DELETE", `/api/batches/${id}`),
+  batchZipUrl: (id: string, format: "filled" | "flattened") => `/api/batches/${id}/export.zip?format=${format}`,
+
   registry: () => req<RegistryEntry[]>("GET", "/api/rules/registry"),
 };
 

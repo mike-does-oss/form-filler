@@ -43,6 +43,41 @@ The app is published on `127.0.0.1:8080` only. Docling's model weights are downl
 build time and the container runs with `HF_HUB_OFFLINE=1`, so there are no outbound calls at runtime.
 On Apple Silicon, run Ollama natively (Metal) and the app with `uv` instead.
 
+## Batch fill
+
+Fill the same form once per person or case. Put each one's documents in its own folder:
+
+```
+clients/                 <- pick or drop this folder (Batches page), or pass it as --sets
+  alice/                 <- one filled form
+    payslip.pdf
+    2024/licence.jpg     <- nested folders stay with their top-level folder
+  bob/
+    statement.pdf
+```
+
+Files sitting directly in `clients/` and unsupported file types are listed as left out.
+Each set is an ordinary job, so you review it on the usual review page. The batch page shows
+progress, how many fields each set needs checked, and "Review next".
+
+The download (or `--out` folder) mirrors the input:
+
+```
+October intake/
+  summary.csv            <- one row per set: status, fields to check, every value side by side
+  alice/
+    form_filled.pdf      <- or .docx; "Flattened" gives non-editable PDFs
+    values.json          <- values with source quotes and pages
+    values.csv
+  bob/ ...
+```
+
+```bash
+uv run form-filler batch --form blank.pdf --sets clients/ --out filled/ [--format flattened] [--name "October intake"]
+```
+
+Values not yet reviewed are exported as proposed; judgment answers stay blank until accepted.
+
 ## Configuration
 
 `config.yaml` holds the defaults from the spec. Any value can be overridden with an
@@ -111,11 +146,13 @@ POST   /api/jobs/{id}/export              {format: filled | flattened | json | c
 DELETE /api/jobs/{id}                     removes files, chunks, embeddings, values and audit entries
 GET    /api/templates[/{id}]              templates, judgment rules, corrections
 PUT    /api/templates/{id}/rules/{key}    edit facts / rule type / rubric / code rule
-POST   /api/batches, /api/batches/{id}/run, GET /api/batches/{id}    batch mode with throughput
+POST   /api/batches {form_id, name, sets}, POST /api/batches/{id}/run   batch fill (one job per set)
+GET    /api/batches, /api/batches/{id}, /api/batches/{id}/export.zip   status, per-set counts, zip of folders
+DELETE /api/batches/{id}
 GET    /api/health
 ```
 
-CLI: `form-filler serve | health | delete-job <id> | batch --form F --sets DIR --out DIR`.
+CLI: `form-filler setup | serve | health | delete-job <id> | batch --form F --sets DIR --out DIR`.
 
 ## Evaluation
 
