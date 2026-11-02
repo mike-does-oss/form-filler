@@ -164,6 +164,25 @@ export interface Health {
   config: Record<string, unknown>;
 }
 
+export interface SetupModel {
+  name: string; label: string; download_gb: number; min_ram_gb: number; blurb: string; recommended: boolean;
+}
+export interface SetupProgress {
+  running: boolean; done: boolean; error: string | null;
+  step: "starting" | "install" | "start" | "pull" | "done" | null; detail: string; fraction: number | null;
+}
+export interface Setup {
+  ready: boolean;
+  backend: string;
+  ollama: { installed: boolean; portable: boolean; running: boolean; remote: boolean; base_url: string; missing_models: string[] };
+  models: { required: string[]; missing: string[]; current: string };
+  catalog: SetupModel[];
+  ram_gb: number | null;
+  portable_asset: string | null;
+  ocr: Health["ocr"];
+  progress: SetupProgress;
+}
+
 export interface FactDefT { key: string; label: string; type: string; question: string | null; required: boolean }
 export interface Rule {
   id: number; template_id: number; field_key: string; depends_on: string[]; facts: FactDefT[];
@@ -217,6 +236,9 @@ export type ExportFormat = "filled" | "flattened" | "json" | "csv";
 
 export const api = {
   health: () => req<Health>("GET", "/api/health"),
+  setup: () => req<Setup>("GET", "/api/setup"),
+  setupStart: (model: string | null) => req<Setup>("POST", "/api/setup/start", { model }),
+  setupProgress: () => req<SetupProgress>("GET", "/api/setup/progress"),
 
   uploadForm: (file: File) => {
     const fd = new FormData();

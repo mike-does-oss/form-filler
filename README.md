@@ -12,6 +12,40 @@ embeddings and the LLM all run locally; no document content leaves the machine.
 Every correction is saved against the form's template and used as a few-shot example next
 time the same form comes in.
 
+## Desktop app (one installer, no Python needed)
+
+Download the installer for your machine from the
+[Releases](https://github.com/mike-does-oss/form-filler/releases) page: `.dmg` (macOS, Apple Silicon
+and Intel), `.exe` (Windows, one-click), `.AppImage` or `.deb` (Linux). It contains the backend, the
+UI and a built-in OCR engine. On first launch a setup screen asks you to pick a model size and
+downloads two things, once:
+
+* the model server (Ollama), unpacked into the app's own data folder (no admin rights, and an
+  Ollama you already have is used instead), and
+* the model you picked plus the embedding model.
+
+After that the app never goes online. Documents, the database and the models stay on the machine.
+The Model page (`#/setup`) lets you switch models later.
+
+The installers are not code-signed yet. macOS: right-click the app → Open the first time.
+Windows: click "More info" → "Run anyway" on the SmartScreen prompt.
+
+### Building the installers
+
+GitHub Actions (`.github/workflows/desktop.yml`) builds all of them on every push and attaches
+them to a release on tags like `v0.1.0`. Locally, for the current platform:
+
+```bash
+uv sync --group build
+cd frontend && npm ci && npm run build && cd ..
+uv run pyinstaller desktop/backend.spec --noconfirm --distpath dist/backend   # frozen backend
+cd desktop && npm ci && npm run dist                                           # installer in desktop/release/
+```
+
+`npm start` in `desktop/` runs the shell against the repo checkout (`uv run form-filler serve`)
+for development. Data lives in the OS app-data folder (`Local Form Filler/`), with `config.yaml`
+and `logs/backend.log` beside it.
+
 ## Quick start (uv + Ollama, macOS or Linux)
 
 ```bash

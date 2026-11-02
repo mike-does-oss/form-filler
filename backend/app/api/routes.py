@@ -14,9 +14,9 @@ from fastapi import APIRouter, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, Response, StreamingResponse
 from pydantic import BaseModel
 
-from app import db
-from app.config import get_config
-from app.extraction.llm_adapter import get_llm
+from app import db, setup_ollama
+from app.config import get_config, write_user_config
+from app.extraction.llm_adapter import get_llm, set_llm
 from app.forms.service import create_form, get_fields, render_form_page, update_fields
 from app.ingest.normalize import SUPPORTED_EXT, guess_mime
 from app.ingest.ocr import ocr_status
@@ -24,6 +24,61 @@ from app.jobs import service as jobs
 from app.jobs.queue import enqueue
 
 router = APIRouter(prefix="/api")
+
+
+# ------------------------------------------------------------------ first-run setup
+class SetupStart(BaseModel):
+    model: str | None = None  # pick a model from the catalog before downloading
+
+
+def _setup_out() -> dict:
+    cfg = get_config()
+    st = setup_ollama.status(cfg) if cfg.llm.backend == "ollama" else None
+    if st is None:
+        running = setup_ollama.server_up(cfg.llm.base_url)
+        st = {"installed": True, "portable": False, "running": running, "remote": True, "base_url": cfg.llm.base_url, "missing_models": []}
+    ram = setup_ollama.total_ram_gb()
+    rec = setup_ollama.recommended_model(ram)
+    return {
+        "ready": st["running"] and not st["missing_models"],
+        "backend": cfg.llm.backend,
+        "ollama": st,
+        "models": {"required": setup_ollama.required_models(cfg), "missing": st["missing_models"], "current": cfg.llm.model},
+        "catalog": [{**m, "recommended": m["name"] == rec} for m in setup_ollama.MODEL_CATALOG],
+        "ram_gb": ram,
+        "portable_asset": _portable_asset_or_none(),
+        "ocr": ocr_status(),
+        "progress": setup_ollama.runner.state,
+    }
+
+
+def _portable_asset_or_none() -> str | None:
+    try:
+        return setup_ollama.portable_asset()
+    except setup_ollama.SetupError:
+        return None
+
+
+@router.get("/setup")
+def setup_status() -> dict:
+    return _setup_out()
+
+
+@router.post("/setup/start")
+def setup_start(body: SetupStart) -> dict:
+    """Install Ollama (portable) if missing, start it and download the models, in the background."""
+    if body.model:
+        write_user_config({"llm": {"model": body.model}})
+        set_llm(None)  # rebuild the adapter with the new model on next use
+        jobs.audit(None, None, "config_changed", None, {"llm.model": body.model})
+    if not setup_ollama.runner.start(get_config):
+        raise HTTPException(409, "setup is already running")
+    return _setup_out()
+
+
+@router.get("/setup/progress")
+def setup_progress() -> dict:
+    return setup_ollama.runner.state
 
 
 # ------------------------------------------------------------------ helpers

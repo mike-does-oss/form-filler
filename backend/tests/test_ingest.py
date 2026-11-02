@@ -73,3 +73,36 @@ def test_docx_source_rendered(app_env):
     assert "amara.okafor@example.org" in text and "Chidi Okafor (brother)" in text
     d = db.q1("SELECT stored_path FROM documents WHERE id = ?", (did,))
     assert fitz.open(d["stored_path"].replace(".docx", ".normalized.pdf")).page_count >= 1
+
+
+def test_scanned_sources_with_rapidocr(app_env, monkeypatch):
+    """RapidOCR ships its models in the wheel, so it must work with no system install."""
+    from app.config import reset_config
+    from app.ingest.ocr import ocr_status
+
+    monkeypatch.setenv("FF__OCR__ENGINE", "rapidocr")
+    reset_config()
+    assert ocr_status()["active_engine"] == "rapidocr"
+
+    did = _doc(FIXTURES / "03_scanned_source" / "sources" / "receipt_scan.pdf")
+    info = ingest_document(did)
+    assert info["ocr_pages"] == [1]
+    text = " ".join(c["text"] for c in db.q("SELECT text FROM chunks WHERE document_id = ?", (did,)))
+    assert "XKD-482" in text and "18,750" in text
+    boxes = locate_quote(did, 1, "Registration XKD-482")
+    assert boxes
+    page = db.q1("SELECT width, height FROM page_spans WHERE document_id = ?", (did,))
+    for b in boxes:
+        assert 0 <= b[0] < b[2] <= page["width"] and 0 <= b[1] < b[3] <= page["height"]
+
+    did2 = _doc(FIXTURES / "03_scanned_source" / "sources" / "licence_scan.png")
+    assert ingest_document(did2)["ocr_pages"] == [1]
+    text2 = " ".join(c["text"] for c in db.q("SELECT text FROM chunks WHERE document_id = ?", (did2,)))
+    assert "2847 1956" in text2
+
+
+def test_missing_tesseract_falls_back_to_rapidocr(app_env, monkeypatch):
+    from app.ingest import ocr
+
+    monkeypatch.setattr(ocr, "tesseract_available", lambda: False)
+    assert ocr.resolve_engine() == "rapidocr"

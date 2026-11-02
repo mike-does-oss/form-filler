@@ -45,7 +45,7 @@ class EmbeddingsConfig(BaseModel):
 
 
 class OCRConfig(BaseModel):
-    engine: Literal["docling", "paddleocr", "tesseract"] = "docling"
+    engine: Literal["docling", "paddleocr", "rapidocr", "tesseract"] = "docling"
     language: str = "en"
     text_layer_min_chars: int = 30
     dpi: int = 300
@@ -163,3 +163,27 @@ def get_config() -> Config:
 
 def reset_config() -> None:
     get_config.cache_clear()
+
+
+def user_config_path() -> Path:
+    """Where settings changed from the UI are saved: FORMFILLER_CONFIG if set, else the loaded file."""
+    return _find_config_file() or REPO_ROOT / "config.yaml"
+
+
+def write_user_config(updates: dict) -> Path:
+    """Merge nested `updates` (e.g. {"llm": {"model": "x"}}) into the user config file and reload."""
+    path = user_config_path()
+    data = (yaml.safe_load(path.read_text()) or {}) if path.exists() else {}
+    _deep_merge(data, updates)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(yaml.safe_dump(data, sort_keys=False))
+    reset_config()
+    return path
+
+
+def _deep_merge(base: dict, updates: dict) -> None:
+    for k, v in updates.items():
+        if isinstance(v, dict) and isinstance(base.get(k), dict):
+            _deep_merge(base[k], v)
+        else:
+            base[k] = v

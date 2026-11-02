@@ -1,0 +1,91 @@
+# Builds the desktop installers for macOS, Windows and Linux.
+# Runs on every push to master (artifacts only) and publishes a GitHub Release on tags like v0.1.0.
+name: desktop
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14          # Apple Silicon
+            arch: arm64
+          - os: macos-15-intel    # Intel Mac
+            arch: x64
+          - os: windows-latest
+            arch: x64
+          - os: ubuntu-22.04
+            arch: x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Backend tests
+        run: |
+          uv sync --group build
+          uv run pytest -q -p no:warnings
+
+      - name: Build web UI
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Freeze backend
+        run: uv run pyinstaller desktop/backend.spec --noconfirm --distpath dist/backend
+
+      - name: Smoke-test frozen backend
+        shell: bash
+        run: |
+          dist/backend/form-filler/form-filler --help
+          FF__STORAGE__DATA_DIR="$RUNNER_TEMP/ffdata" dist/backend/form-filler/form-filler health || true
+
+      - name: Build installer
+        working-directory: desktop
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"   # unsigned builds
+        run: |
+          npm ci
+          npx electron-builder --publish never --${{ matrix.arch }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            desktop/release/*.dmg
+            desktop/release/*.zip
+            desktop/release/*.exe
+            desktop/release/*.AppImage
+            desktop/release/*.deb
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: installers/*
+          generate_release_notes: true

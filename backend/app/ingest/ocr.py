@@ -117,17 +117,76 @@ def ocr_page_paddle(page: fitz.Page, dpi: int, language: str) -> PageLayout:
         box = [min(xs) * scale, min(ys) * scale, max(xs) * scale, max(ys) * scale]
         confs.append(float(conf) * 100)
         layout.blocks.append(Block(text=text, bbox=box))
-        # approximate word boxes by splitting the line box evenly
-        words = text.split()
-        if words:
-            w = (box[2] - box[0]) / max(1, len(text))
-            x = box[0]
-            for word in words:
-                wb = [x, box[1], x + w * len(word), box[3]]
-                layout.words.append((word, wb))
-                x += w * (len(word) + 1)
+        _split_words(layout, text, box)
     layout.ocr_confidence = sum(confs) / len(confs) if confs else 0.0
     return layout
+
+
+# ---------------------------------------------------------------- RapidOCR
+# ONNX models ship inside the wheel (~16 MB), so this works with no system install and no
+# downloads. It is the engine the desktop app uses.
+def rapidocr_available() -> bool:
+    try:
+        import rapidocr_onnxruntime  # noqa: F401
+
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
+RAPIDOCR_EN_REC = Path(__file__).parent / "models" / "en_PP-OCRv3_rec_infer.onnx"
+RAPIDOCR_MAX_SIDE_PX = 1600  # detection degrades on larger renders; ~135 dpi for A4
+
+
+@lru_cache(maxsize=2)
+def _rapidocr(language: str):
+    from rapidocr_onnxruntime import RapidOCR  # type: ignore
+
+    if language == "en" and RAPIDOCR_EN_REC.exists():
+        return RapidOCR(rec_model_path=str(RAPIDOCR_EN_REC))
+    return RapidOCR()
+
+
+def rapidocr_dpi(page: fitz.Page, dpi: int) -> int:
+    longest = max(page.rect.width, page.rect.height) or 1
+    return max(72, min(dpi, int(RAPIDOCR_MAX_SIDE_PX * 72 / longest)))
+
+
+def ocr_page_rapidocr(page: fitz.Page, dpi: int, language: str) -> PageLayout:
+    dpi = rapidocr_dpi(page, dpi)
+    return ocr_png_rapidocr(render_page_png(page, dpi), page.number + 1, page.rect.width, page.rect.height, dpi, language)
+
+
+def ocr_png_rapidocr(png: bytes, pno: int, width: float, height: float, dpi: int, language: str) -> PageLayout:
+    import numpy as np
+    from PIL import Image
+
+    img = np.array(Image.open(io.BytesIO(png)).convert("RGB"))
+    result, _ = _rapidocr(language)(img)
+    scale = 72.0 / dpi
+    layout = PageLayout(page=pno, width=width, height=height, ocr_used=True, engine="rapidocr")
+    confs: list[float] = []
+    for pts, text, conf in result or []:
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        box = [min(xs) * scale, min(ys) * scale, max(xs) * scale, max(ys) * scale]
+        confs.append(float(conf) * 100)
+        layout.blocks.append(Block(text=text, bbox=box))
+        _split_words(layout, text, box)
+    layout.ocr_confidence = sum(confs) / len(confs) if confs else 0.0
+    return layout
+
+
+def _split_words(layout: PageLayout, text: str, box: list[float]) -> None:
+    """Approximate word boxes by splitting a line box evenly by character count."""
+    words = text.split()
+    if not words:
+        return
+    w = (box[2] - box[0]) / max(1, len(text))
+    x = box[0]
+    for word in words:
+        layout.words.append((word, [x, box[1], x + w * len(word), box[3]]))
+        x += w * (len(word) + 1)
 
 
 # ---------------------------------------------------------------- Docling
@@ -229,12 +288,16 @@ def ocr_document_docling(pdf_path: Path, pages: list[int], language: str) -> dic
 
 # ---------------------------------------------------------------- dispatch
 def resolve_engine() -> str:
-    """The OCR engine actually in use (configured engine if installed, else tesseract)."""
+    """The OCR engine actually in use: the configured one if installed, else rapidocr, else tesseract."""
     engine = get_config().ocr.engine
     if engine == "docling" and docling_available():
         return "docling"
     if engine == "paddleocr" and paddle_available():
         return "paddleocr"
+    if engine == "tesseract" and tesseract_available():
+        return "tesseract"
+    if rapidocr_available():
+        return "rapidocr"
     return "tesseract"
 
 
@@ -245,6 +308,7 @@ def ocr_status() -> dict:
         "active_engine": resolve_engine(),
         "docling": docling_available(),
         "paddleocr": paddle_available(),
+        "rapidocr": rapidocr_available(),
         "tesseract": tesseract_available(),
     }
 
@@ -270,7 +334,10 @@ def ocr_pages(pdf_path: Path, page_numbers: list[int]) -> dict[int, PageLayout]:
             return ocr_page_paddle(page, cfg.ocr.dpi, cfg.ocr.language)
         return ocr_page_tesseract(page, cfg.ocr.dpi, cfg.ocr.language)
 
-    if engine == "tesseract":
+    if engine == "rapidocr":
+        for p in page_numbers:
+            out[p] = ocr_page_rapidocr(doc[p - 1], cfg.ocr.dpi, cfg.ocr.language)
+    elif engine == "tesseract":
         # pytesseract shells out, so threads give real parallelism; render pages first
         # (PyMuPDF documents are not thread safe).
         rendered = {p: _render_for_thread(doc[p - 1], cfg.ocr.dpi) for p in page_numbers}

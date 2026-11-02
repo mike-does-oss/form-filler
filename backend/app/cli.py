@@ -16,6 +16,7 @@ def main(argv: list[str] | None = None) -> int:
     sub = ap.add_subparsers(dest="cmd", required=True)
     st = sub.add_parser("setup", help="install/start Ollama if missing and download the configured models")
     st.add_argument("-y", "--yes", action="store_true", help="don't ask before installing or downloading")
+    st.add_argument("--portable", action="store_true", help="unpack Ollama into the data folder instead of installing system-wide")
     sv = sub.add_parser("serve", help="run the web app (offers to set up Ollama first if it isn't running)")
     sv.add_argument("--skip-setup", action="store_true", help="don't check for Ollama before starting")
     sub.add_parser("health", help="check model server, models and OCR")
@@ -39,7 +40,7 @@ def main(argv: list[str] | None = None) -> int:
         from app.setup_ollama import SetupError, ensure
 
         try:
-            return 0 if ensure(cfg, assume_yes=args.yes) else 1
+            return 0 if ensure(cfg, assume_yes=args.yes, portable=args.portable) else 1
         except SetupError as e:
             print(f"setup failed: {e}", file=sys.stderr)
             return 1

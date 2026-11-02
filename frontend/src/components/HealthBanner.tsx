@@ -43,16 +43,17 @@ export function HealthBanner() {
       </div>
       {!h.llm.reachable && (
         <div className="hint">
-          Start the local model server{h.llm.base_url ? <> at <code>{h.llm.base_url}</code></> : null} (e.g. <code>ollama serve</code>).
+          The local model server isn't running{h.llm.base_url ? <> at <code>{h.llm.base_url}</code></> : null}.{" "}
+          <a href="#/setup">Set it up</a> or start it yourself (<code>ollama serve</code>).
         </div>
       )}
       {h.llm.reachable && missing.length > 0 && (
         <div className="hint">
-          Missing model{missing.length > 1 ? "s" : ""}: run{" "}
+          Missing model{missing.length > 1 ? "s" : ""}: <a href="#/setup">download</a> or run{" "}
           {[...new Set(missing.map(([, m]) => m.name))].map((n) => <code key={n} className="cmd">ollama pull {n}</code>)}
         </div>
       )}
-      {!ocrOk && <div className="hint">Install Tesseract (<code>brew install tesseract</code>) for scanned documents.</div>}
+      {!ocrOk && <div className="hint">Install Tesseract (<code>brew install tesseract</code>) or the <code>rapidocr-onnxruntime</code> package for scanned documents.</div>}
     </div>
   );
 }

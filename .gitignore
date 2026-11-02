@@ -9,3 +9,7 @@ eval/fixtures/*/generated/
 .pytest_cache/
 data-ui/
 *.tsbuildinfo
+/dist/
+/build/
+desktop/node_modules/
+desktop/release/

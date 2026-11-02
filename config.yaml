@@ -12,7 +12,7 @@ vision:
 embeddings:
   model: bge-m3
 ocr:
-  engine: docling          # docling | paddleocr | tesseract (falls back to tesseract if not installed)
+  engine: docling          # docling | paddleocr | rapidocr | tesseract (falls back to rapidocr, then tesseract)
   language: en
 retrieval:
   k: 8

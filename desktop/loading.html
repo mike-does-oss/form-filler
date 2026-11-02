@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Local Form Filler</title>
+<style>
+  :root { --bg: #f6f6f3; --fg: #1d1d1b; --muted: #6b6b66; --accent: #1d5b86; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1b1b1a; --fg: #ececea; --muted: #9a9a94; --accent: #6fa7d1; } }
+  html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  .wrap { height: 100%; display: grid; place-items: center; }
+  .card { text-align: center; display: grid; gap: 10px; justify-items: center; }
+  .spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    border-top-color: var(--accent); animation: r 0.9s linear infinite; }
+  @keyframes r { to { transform: rotate(360deg); } }
+  .muted { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <svg width="40" height="40" viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="2" y="1" width="12" height="14" rx="1.5" fill="var(--accent)" />
+        <path d="M5 5h6M5 8h6M5 11h3" stroke="var(--bg)" stroke-width="1.3" />
+      </svg>
+      <strong>Local Form Filler</strong>
+      <div class="spin" role="progressbar" aria-label="Starting"></div>
+      <div class="muted">Starting on this computer…</div>
+    </div>
+  </div>
+</body>
+</html>

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -16,7 +17,8 @@ from app.config import REPO_ROOT, get_config
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 
-FRONTEND_DIST = REPO_ROOT / "frontend" / "dist"
+# The desktop app ships the built UI next to the frozen backend and points here at it.
+FRONTEND_DIST = Path(os.environ.get("FF_FRONTEND_DIST") or REPO_ROOT / "frontend" / "dist")
 
 
 def create_app(start_worker: bool = True) -> FastAPI:
@@ -32,6 +34,9 @@ def create_app(start_worker: bool = True) -> FastAPI:
         yield
         if worker:
             worker.stop()
+        from app.setup_ollama import stop_started
+
+        stop_started()  # an Ollama we started goes away with us, so the model's memory is freed
 
     app = FastAPI(title="Local Form Filler", version="0.1.0", lifespan=lifespan)
     app.include_router(router)
