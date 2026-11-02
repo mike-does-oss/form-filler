@@ -47,6 +47,10 @@ def ollama_binary() -> str | None:
     app = mac_app()
     if app and (app / "Contents/Resources/ollama").exists():
         return str(app / "Contents/Resources/ollama")
+    # Windows: winget installs here, and the current shell's PATH isn't refreshed until restart
+    local = os.environ.get("LOCALAPPDATA")
+    if local and (Path(local) / "Programs/Ollama/ollama.exe").exists():
+        return str(Path(local) / "Programs/Ollama/ollama.exe")
     return None
 
 
