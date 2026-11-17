@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import platform
+from pathlib import Path
 import pytest
 
 from app import setup_ollama as so
@@ -103,11 +105,26 @@ def _tgz(path, members: dict[str, bytes]):
             t.addfile(info, io.BytesIO(data))
 
 
+def _zip(path, members: dict[str, bytes]):
+    import zipfile
+
+    with zipfile.ZipFile(path, "w") as z:
+        for name, data in members.items():
+            z.writestr(name, data)
+
+
 def test_install_portable_downloads_and_extracts(tmp_path, monkeypatch):
     c = cfg()
     c.storage.data_dir = str(tmp_path)
-    archive = tmp_path / "fake.tgz"
-    _tgz(archive, {"bin/ollama": b"#!/bin/sh\necho ollama\n", "lib/ollama/libggml.so": b"x"})
+    # The archive layout follows the real release asset for the platform the test runs on.
+    if platform.system() == "Windows":
+        asset, rel = "ollama-windows-amd64.zip", Path("ollama.exe")
+        archive = tmp_path / "fake.zip"
+        _zip(archive, {"ollama.exe": b"MZ", "lib/ollama/ggml.dll": b"x"})
+    else:
+        asset, rel = "ollama-linux-amd64.tgz", Path("bin") / "ollama"
+        archive = tmp_path / "fake.tgz"
+        _tgz(archive, {"bin/ollama": b"#!/bin/sh\necho ollama\n", "lib/ollama/libggml.so": b"x"})
     seen = []
 
     def fake_download(url, dest, progress=None, label=""):
@@ -118,14 +135,15 @@ def test_install_portable_downloads_and_extracts(tmp_path, monkeypatch):
             progress("Downloading", 1.0)
 
     monkeypatch.setattr(so, "download", fake_download)
-    monkeypatch.setattr(so, "portable_asset", lambda: "ollama-linux-amd64.tgz")
+    monkeypatch.setattr(so, "portable_asset", lambda: asset)
     msgs = []
     binary = so.install_portable(c, lambda t, f: msgs.append((t, f)))
-    assert binary == tmp_path / "ollama" / "bin" / "ollama"
-    assert binary.stat().st_mode & 0o111
-    assert seen == [so.RELEASE_BASE + "ollama-linux-amd64.tgz"]
+    assert binary == tmp_path / "ollama" / rel
+    if platform.system() != "Windows":
+        assert binary.stat().st_mode & 0o111
+    assert seen == [so.RELEASE_BASE + asset]
     assert so.portable_binary(c) == binary and so.ollama_binary(c) == str(binary)
-    assert not (tmp_path / "downloads" / "ollama-linux-amd64.tgz").exists()  # archive removed after unpacking
+    assert not (tmp_path / "downloads" / asset).exists()  # archive removed after unpacking
     assert ("Unpacking Ollama", None) in msgs
 
 
